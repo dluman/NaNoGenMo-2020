@@ -43,7 +43,7 @@ read:
     mov     eax, 3
     mov     ebx, [fd_in]
     mov     ecx, corpus
-    mov     edx, fsize
+    mov     edx, [fsize]
     int     0x80
 
     ;close fh
