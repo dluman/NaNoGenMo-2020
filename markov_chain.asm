@@ -1,39 +1,32 @@
+extern  malloc                        ; This is probably cheating
+
 section .text
   global  _start
 
 _start:
   ;read from source text
-  ;call    info
   call    read
+  ;call    to_string
+  call    crawl
 
-  ;print file contents
-  mov     eax, 4
-  mov     ebx, 1
-  mov     ecx, corpus
-  mov     edx, fsize
-  int     0x80
+  ;print file contents char by char
+  ;print:
+    mov     eax, 4
+    mov     ebx, 1
+    mov     ecx, corpus
+    mov     edx, buflen
+    int     0x80
+    ;jg      print
 
   ;quit the kernel
   mov     eax, 1
   int     0x80
-
-info:
-  mov     eax, 4
-  mov     ebx, file
-  mov     ecx, fsize
-  int     0x80
-  
-  mov     eax, dword[fsize + STAT.size]
-  mov     [corpus], eax
-  
-  ret
 
 read:
   ;open the file
   mov     eax, 5
   mov     ebx, file
   mov     ecx, 0
-  mov     edx, 0777
   int     0x80
   
   mov     [fd_in], eax
@@ -42,7 +35,7 @@ read:
   mov     eax, 3
   mov     ebx, [fd_in]
   mov     ecx, corpus
-  mov     edx, fsize
+  mov     edx, buflen
   int     0x80
 
   ;close fh
@@ -52,14 +45,39 @@ read:
   
   ret
 
+;to_string:
+  
+  ;ret
+  
+crawl:
+  lea     di, offset corpus, 0
+  mov     cx, 0h
+  
+  print:
+    mov   dl, [di]
+    mov   ah, 02h
+    int   21h
+    
+    inc   di
+    dec   cx
+    jg    print
+
+  ret
+
 section .data
-  file    db  'corpus.txt'
+  ;file name to read
+  file    db  "corpus.txt"
+
+  ;data structure
+  size_i:
+    struc node
+      char: resd  1
+      num:  resd  1
+      next: resd  1
+    endstruc
+  len     equ   $ - size_i
 
 section .bss
   fd_in   resb  1
-  fsize   resb  64
   corpus  resb  2729061               ; It's a hack!
-
-struc STAT
-  .size:  resd  1
-endstruc
+  buflen: equ   $ - corpus
