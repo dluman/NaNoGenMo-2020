@@ -1,4 +1,11 @@
 extern  malloc                        ; This is probably cheating
+extern  printf
+
+%macro print 1
+  mov       ah, 0x09
+  mov       dx, offset %1
+  int       0x21
+%endmacro
 
 section .text
   global  _start
@@ -6,16 +13,15 @@ section .text
 _start:
   ;read from source text
   call    read
-  ;call    to_string
-  call    crawl
-
+  call    parse
+  
   ;print file contents char by char
   ;print:
-    mov     eax, 4
-    mov     ebx, 1
-    mov     ecx, corpus
-    mov     edx, buflen
-    int     0x80
+    ;mov     eax, 4
+    ;mov     ebx, 1
+    ;mov     ecx, corpus
+    ;mov     edx, buflen
+    ;int     0x80
     ;jg      print
 
   ;quit the kernel
@@ -45,23 +51,26 @@ read:
   
   ret
 
-;to_string:
+parse:
   
-  ;ret
+  mov     byte [corpus + eax], 0
+  mov     ecx, eax
+  mov     esi, corpus
   
-crawl:
-  lea     di, offset corpus, 0
-  mov     cx, 0h
-  
-  print:
-    mov   dl, [di]
-    mov   ah, 02h
-    int   21h
+  step:
+    mov    ah, 01
     
-    inc   di
-    dec   cx
-    jg    print
-
+    ;print the progress
+    mov     eax, 4
+    mov     ebx, 1
+    mov     ecx, esi
+    mov     edx, 1
+    int     0x80
+    
+    inc   esi
+    dec   ecx
+    jnz   step
+  
   ret
 
 section .data
@@ -80,4 +89,4 @@ section .data
 section .bss
   fd_in   resb  1
   corpus  resb  2729061               ; It's a hack!
-  buflen: equ   $ - corpus
+  buflen  equ   $ - corpus
