@@ -14,15 +14,6 @@ _start:
   ;read from source text
   call    read
   call    parse
-  
-  ;print file contents char by char
-  ;print:
-    ;mov     eax, 4
-    ;mov     ebx, 1
-    ;mov     ecx, corpus
-    ;mov     edx, buflen
-    ;int     0x80
-    ;jg      print
 
   ;quit the kernel
   mov     eax, 1
@@ -52,13 +43,10 @@ read:
   ret
 
 parse:
-  
-  mov     byte [corpus + eax], 0
-  mov     ecx, eax
+
   mov     esi, corpus
   
   step:
-    mov    ah, 01
     
     ;print the progress
     mov     eax, 4
@@ -67,9 +55,11 @@ parse:
     mov     edx, 1
     int     0x80
     
-    inc   esi
-    dec   ecx
-    jnz   step
+    inc     esi
+    
+    cmp     [esi], byte 0
+    
+    jnz     step
   
   ret
 
